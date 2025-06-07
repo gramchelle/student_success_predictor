@@ -1,6 +1,6 @@
 from preprocessing import preprocess_data
-from stacking_model import run_stacking_model
-from voting_model import run_voting_model
+from models.stacking_model import run_stacking_model
+from models.voting_model import run_voting_model
 import pandas as pd
 
 def main():

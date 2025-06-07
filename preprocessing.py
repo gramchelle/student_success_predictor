@@ -7,6 +7,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
+from imblearn.over_sampling import SMOTE
 
 
 def preprocess_data():
@@ -249,6 +250,13 @@ def preprocess_data():
     
     return non_processed_df, df, X_train, X_test, y_train, y_test
 
-df, processed_df, X_train, X_test, y_train, y_test = preprocess_data()
-print(y_train.shape)
-print(y_test.shape)
+#df, processed_df, X_train, X_test, y_train, y_test = preprocess_data()
+#print(y_train.shape)
+#print(y_test.shape)
+
+def smote_data(X_train, y_train):
+    smote = SMOTE(random_state=42)
+    X_resampled, y_resampled = smote.fit_resample(X_train, y_train)
+    return X_resampled, y_resampled
+
+
