@@ -62,8 +62,15 @@ st.write("Now, we need this dataset to be processed before using for modelling a
 # Sütun isimlerinin neleri temsil ettiğinden vb bahset
 st.write("### Preprocessed data:")
 st.dataframe(processed_df.head())
+
+# st.header("", divider="gray")
    
-st.markdown("## 3. Model Overview")
+st.markdown("## 3. Data Preprocessing")
+
+
+
+
+st.markdown(""" ## 4. Model Overview""")
 
 st.write("""
          we are gonna use stacking model and voting models, click to train the data accordingly.
@@ -197,7 +204,7 @@ if st.session_state.get("show_rf"):
     else:
         st.warning("Train random forest model first.")
 
-st.markdown("## 4. Features")
+st.markdown("## 5. Features")
 st.write("""
             The model uses a variety of features to make predictions about students' dropout and academic success.
             These features include students' grades, attendance, socio-economic background, and other factors that may influence their academic performance.
@@ -214,15 +221,6 @@ with feature_col1:
 with feature_col2:
     st.markdown("""### Processed dataset columns (after preprocessing):""")
     st.write(processed_df.columns.tolist())
-
-st.markdown("## 5. Model Performance")
-st.write("""
-            The model is evaluated using various metrics such as accuracy, precision, recall, and F1-score to ensure its performance and reliability.
-            The model's performance is assessed on a test dataset that is separate from the training dataset to ensure that the model generalizes well to unseen data.
-            The model's performance is visualized using confusion matrices, ROC curves, and other relevant visualizations to provide insights into its predictive capabilities.
-            The model achieves a high accuracy rate, indicating its effectiveness in predicting students' dropout and academic success.
-            The model's performance is continuously monitored and improved based on feedback and new data to ensure its reliability and accuracy.
-            """)
 
 st.markdown("## 6. Predictions")
 st.write("""
@@ -311,16 +309,80 @@ if st.checkbox("Yes"):
 else:
     has_scholarship = 0
     
+# st.write("Your Scholarship Status is:", has_scholarship)
+    
 st.write("7. Are you a debtor?")
 
-if st.checkbox("Yes"):
+if st.checkbox("Yes "):
     is_debtor = 1
 else:
     is_debtor = 0
 
 st.write("8. What is your Admission grade?")
 
-admission_grade = st.slider("Select your admission grade", 0, 100, 50)
+admission_grade = st.slider("Select your admission grade", 95, 160, 123)
+
+st.write("9. What is the course?")
+
+course = st.selectbox( ### KURS İSİMLERİ BURAYA
+    'Select a course',
+    ['Mathematics', 'Science', 'Literature', 'History', 'Art', 'Engineering', 'Business', 'Law']
+)
+
+st.write("10. What is your GDP?")
+
+gdp = st.slider("Select your GDP", -4.06, 3.51, 1.23)
+
+if gdp >= -4.06:
+    gdp = 0
+elif gdp >= -3.12 and gdp <= -1.70 :
+    gdp = 1
+elif gdp >= -1.71 and gdp <= -0.92:
+    gdp = 2
+elif gdp >= -0.91 and gdp <= 0.32:
+    gdp = 3
+elif gdp >= 0.33 and gdp <= 0.79:
+    gdp = 4
+elif gdp >= 0.80 and gdp <= 1.74:
+    gdp = 5
+elif gdp >= 1.75 and gdp <= 1.79:
+    gdp = 6
+elif gdp >= 1.80 and gdp <= 2.02:
+    gdp = 7
+elif gdp >= 2.03 and gdp <= 3.5:
+    gdp = 8
+elif gdp >= 3.51:
+    gdp = 9
+
+st.write("11. Do you have educational special needs?")
+
+special_needs = st.selectbox(
+    'Select an option',
+    ['Yes', 'No']
+)
+
+if special_needs == "Yes":
+    special_needs = 1
+else:
+    special_needs = 0
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+st.markdown("## 7. Model Performance")
+st.write("""
+            The model is evaluated using various metrics such as accuracy, precision, recall, and F1-score to ensure its performance and reliability.
+            The model's performance is assessed on a test dataset that is separate from the training dataset to ensure that the model generalizes well to unseen data.
+            The model's performance is visualized using confusion matrices, ROC curves, and other relevant visualizations to provide insights into its predictive capabilities.
+            The model achieves a high accuracy rate, indicating its effectiveness in predicting students' dropout and academic success.
+            The model's performance is continuously monitored and improved based on feedback and new data to ensure its reliability and accuracy.
+            """)
 
 
 
@@ -330,7 +392,8 @@ admission_grade = st.slider("Select your admission grade", 0, 100, 50)
 
 
 
-st.markdown("## 7. Conclusion")
+
+st.markdown("## 8. Conclusion")
 st.write("""
             The app demonstrates the capabilities of a Supervised Machine Learning model in predicting students' dropout and academic success.
             The model is trained on a dataset containing various features related to students' academic performance and personal attributes.
@@ -344,28 +407,10 @@ st.write("""
 
 st.markdown("You can reach me out at [LinkedIn](https://www.linkedin.com/in/ozlemnurduman/), [GitHub](https://www.github.com/gramchelle) or [Kaggle](https://www.kaggle.com/gramchelle).")
 
-st.write("You clicked the button! :tada:")
-st.subheader("st.checkbox")
-if st.checkbox("Check me!"):
-    st.write("You checked the box! :white_check_mark:")
-st.subheader("st.radio")
-options = ["Option 1", "Option 2", "Option 3"]
-selected_option = st.radio("Select an option", options)
-st.write("You selected:", selected_option)
-st.subheader("st.selectbox")
-options = ["Option A", "Option B", "Option C"]
+
 
 
     
 
-window = st.slider("Select a number", 0, 100, 50) # 50 is a default value
-
 st.header("Header with a divider", divider = "rainbow")
 st.header("_STREAMLIT_ is :blue[cool] :sunglasses: :rocket: :red[***ÖZLEM***]")
-
-
-#chart_data = pd.DataFrame(
-#    np.random.randn(20, 3),
-#    columns=["a", "b", "c"])
-#st.area_chart(chart_data)
-
