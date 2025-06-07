@@ -247,7 +247,7 @@ def preprocess_data():
     y = df[label]
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, test_size=0.2, random_state=42)
-    
+    print(X_train.columns)
     return non_processed_df, df, X_train, X_test, y_train, y_test
 
 #df, processed_df, X_train, X_test, y_train, y_test = preprocess_data()
