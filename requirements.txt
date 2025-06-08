@@ -4,7 +4,6 @@ numpy
 scikit-learn
 lightgbm
 xgboost
-randomforest
 matplotlib
 seaborn
-joblib
+scipy
