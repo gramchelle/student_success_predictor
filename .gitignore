@@ -3,5 +3,5 @@
 /.venv
 #/visualization.py 
 *.bat
-*.csv
+.csv
 __init__.py
