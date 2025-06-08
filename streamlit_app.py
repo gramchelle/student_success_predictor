@@ -7,6 +7,7 @@ import shap
 from preprocessing import preprocess_data, smote_data, feature_importances
 from models import lightgbm_voting_model, stacking_model, voting_model, random_forest_model
 from sklearn.metrics import confusion_matrix, classification_report
+import visualization as vis
 
 
 df, processed_df, X_train, X_test, y_train, y_test = preprocess_data()
@@ -341,6 +342,18 @@ It is robust, handles overfitting well, and often works out-of-the-box for tabul
 | **Random Forest**      | Random Forest only                  | Simple and fast baseline               |
 """)
 
+vis.comparison_visualization(df, processed_df, "Admission grade")
+    
+vis.comp(df, processed_df)
+
+#vis.plot_parent_correlations(df, "Target")
+
+#vis.visualize_preprocessing_effects(df, processed_df)
+
+st.write("""### SMOTE
+Since our Target feature has a imbalanced distribution, we also implemented **SMOTE (Synthetic Minority Over-sampling Technique)** to handle class imbalance during training. This technique generates synthetic samples for the minority class, improving model performance on underrepresented classes.
+However, you can choose to enable or disable SMOTE based on your preference. By default, it is disabled, and the training data will be used as is without oversampling.
+""")
 
 smote_enabled_col, smote_enabled_description = st.columns(2)
 
@@ -1031,7 +1044,6 @@ mother_qualification = st.selectbox(
 
 mapped_mother_knowledge = (mother_occ_map[mother_occupation] * mother_qual_map[mother_qualification]) / 2.0
 
-
 # 30) previous_qualification
 st.subheader("28) What was your previous qualification grade and type?")
 default_prev_grade = float(df["Previous qualification (grade)"].median())
@@ -1087,7 +1099,6 @@ input_dict = {
     "previous_qualification":       mapped_previous_qualification
 }
 
-# Modelin beklediği sıralama
 expected_order = ['Marital status', 'Application mode', 'Application order', 'Course',
        'Daytime/evening attendance\t', 'Admission grade', 'Displaced',
        'Educational special needs', 'Debtor', 'Tuition fees up to date',
@@ -1098,7 +1109,6 @@ expected_order = ['Marital status', 'Application mode', 'Application order', 'Co
        'sem1_evaluation_rate', 'sem2_evaluation_rate', 'avg_evaluations',
        'father_knowledge', 'mother_knowledge']
 
-# DataFrame'e çevir ve doğru sıraya göre yeniden sırala
 input_df = pd.DataFrame([input_dict])
 input_df = input_df[expected_order]
 
@@ -1115,23 +1125,23 @@ def mapping_to_label(prediction):
     else:
         return "Graduate"
 
-column1, column2, column3 = st.columns(3)
+column1, column2, column3, column4 = st.columns(4)
 
 with column1:
-    if st.button("Predict with Stacking Model"):
+    if st.button("Predict with XGBoost & RF Stacking Model"):
         if 'stacking_clf' in st.session_state:
             stacking_pred = st.session_state.stacking_clf.predict(input_df)[0]
             st.write(f"Stacking Model Prediction: {mapping_to_label(stacking_pred)}")
         else:
-            st.warning("Stacking model is not trained yet.")
+            st.warning("XGBoost & RF Stacking is not trained yet.")
             
 with column2:
-    if st.button("Predict with Voting Model"):
+    if st.button("Predict with XGBoost & RF Stack Voting Model"):
         if 'voting_clf' in st.session_state:
             voting_pred = st.session_state.voting_clf.predict(input_df)[0]
             st.write(f"Voting Model Prediction: {mapping_to_label(voting_pred)}")
         else:
-            st.warning("Voting model is not trained yet.")
+            st.warning("XGBoost & RF Stack Voting model is not trained yet.")
             
 with column3:
     if st.button("Predict with Random Forest Model"):
@@ -1139,26 +1149,26 @@ with column3:
             rf_pred = st.session_state.rf_model.predict(input_df)[0]
             st.write(f"Random Forest Prediction: {mapping_to_label(rf_pred)}")
         else:
-            st.warning("Random Forest model is not trained yet.")  
-    
+            st.warning("Random Forest Model is not trained yet.")
+
+with column4:
+    if st.button("Predict with LightGBM & RF Voting Model"):
+        if 'lgbm_voting_clf' in st.session_state:
+            lgbm_voting_pred = st.session_state.lgbm_voting_clf.predict(input_df)[0]
+            st.write(f"LightGBM + RF Voting Prediction: {mapping_to_label(lgbm_voting_pred)}")
+        else:
+            st.warning("LightGBM + RF Voting Model is not trained yet.")
 
 st.markdown("## 7. Model Performance")
-st.write("""The performance of the model is evaluated using several key metrics, including accuracy, precision, recall, and F1-score, to ensure both its effectiveness and reliability. These metrics are calculated on a test dataset that is kept separate from the training data, allowing for an unbiased assessment of the model's generalization to unseen instances.
-        To gain deeper insights into the model’s predictive capabilities, performance is also visualized using confusion matrices, ROC curves, and other relevant visual tools. These visualizations help identify the strengths and potential weaknesses of the model across different classes.
-        The model demonstrates a high level of accuracy, indicating its strong performance in predicting both student dropout and academic success. Additionally, the model's performance is continuously monitored and refined based on new data and user feedback, ensuring its long-term reliability and relevance.""")
-
+st.write("""The model's performance was evaluated using various fundamental metrics such as accuracy, precision, recall, and F1 score. These metrics were calculated on a test set kept separate from the training data to objectively measure the model's ability to generalize to unseen data. 
+Additionally, to better understand the model's success across classes, detailed visualizations like confusion matrices, ROC curves, and other graphical tools were used. These visuals help identify the model's strengths and areas for improvement. 
+The model demonstrates a high accuracy rate in predicting student dropout and academic success. Moreover, it is continuously monitored and improved based on new data and user feedback, ensuring its reliability and validity over the long term.""")
 
 st.markdown("## 8. Conclusion")
-st.write("""
-            The app demonstrates the capabilities of a Supervised Machine Learning model in predicting students' dropout and academic success.
-            The model is trained on a dataset containing various features related to students' academic performance and personal attributes.
-            The app allows users to interact with the model and visualize the predictions, providing insights into students' academic performance.
-            The model's performance is evaluated using various metrics, and its predictions can be used to identify at-risk students and provide targeted interventions to improve their academic outcomes
-            The app is developed using Streamlit, a powerful framework for building interactive web applications in Python.
-            The app is designed to be user-friendly and provides an intuitive interface for users to interact with the model and visualize the predictions.
-            The app is continuously updated and improved based on user feedback and new data to ensure its reliability and accuracy.
-            The app is a valuable tool for educators, administrators, and policymakers to understand students' academic performance and make informed decisions to improve their outcomes.
-            """)
+st.write("""This application showcases the capability of supervised machine learning models to predict students' risk of dropout and their academic performance. The model was trained on a dataset containing various variables related to students' academic achievements and personal characteristics. 
+The application allows users to interact with the model and visualize predictions, providing valuable insights into students’ academic situations. Model performance is evaluated with multiple metrics, and the predictions support identifying at-risk students for targeted interventions.
+Developed with Streamlit, this application offers a user-friendly and intuitive interface, making it easily accessible for both educators and administrators. The application is continuously updated and refined based on user feedback and new data, enhancing its accuracy and reliability.
+This tool serves as a valuable resource for educators, administrators, and policymakers in understanding and improving student academic outcomes and in developing effective intervention strategies.""")
 
 st.markdown("## 9. References")
 st.write("""Realinho, V., Vieira Martins, M., Machado, J., & Baptista, L. (2021). Predict Students' Dropout and Academic Success [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C5MC89.""")

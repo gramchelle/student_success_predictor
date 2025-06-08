@@ -30,3 +30,9 @@ def run_model():
     #print("**Classification Report:**")
     #print(report)
     return voting_clf, y_pred, accuracy
+
+def predict(test_data, X_train, X_test, y_train, y_test):
+    """ Predict using the trained voting model """
+    voting_clf, _, _ = run_model(X_train, y_train, X_test, y_test)
+    prediction = voting_clf.predict(test_data)
+    return prediction

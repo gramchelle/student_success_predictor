@@ -1,7 +1,7 @@
 /__pycache__
 /models/__pycache__
 /.venv
-/visualization.py 
+#/visualization.py 
 *.bat
 *.csv
 __init__.py
