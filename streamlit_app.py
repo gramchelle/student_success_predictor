@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import shap
+#import shap
 from preprocessing import preprocess_data, smote_data, feature_importances
 from models import lightgbm_voting_model, stacking_model, voting_model, random_forest_model
 from sklearn.metrics import confusion_matrix, classification_report
@@ -1065,8 +1065,6 @@ prev_type_input = st.selectbox(
     index=list(prev_type_map.keys()).index(default_prev_type_label)
 ) 
 mapped_previous_qualification = (prev_grade_input / 200.0) * prev_type_map[prev_type_input]
-
-import pandas as pd
 
 input_dict = {
     "Age at enrollment":            mapped_age,
