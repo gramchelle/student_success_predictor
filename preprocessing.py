@@ -20,7 +20,7 @@ def preprocess_data():
 
     #df = X.join(y)
     
-    df = pd.read_csv("C://Users//Özlem Nur//Desktop//students_dropout_st_model//data.csv", sep=";")
+    df = pd.read_csv("data.csv", sep=";")
 
     non_processed_df = df.copy()
     
