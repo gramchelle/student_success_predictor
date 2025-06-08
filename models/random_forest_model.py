@@ -4,7 +4,8 @@ from sklearn.metrics import accuracy_score, classification_report
 def run_model(X_train, X_test, y_train, y_test):
     
     #model = RandomForestClassifier(random_state=42)#, max_depth= None, min_samples_leaf= 2, min_samples_split= 5, n_estimators= 200)
-    model = RandomForestClassifier(random_state=42, max_depth= None, min_samples_leaf= 2, min_samples_split= 5, n_estimators= 200)
+    #model = RandomForestClassifier(random_state=42, max_depth= None, min_samples_leaf= 2, min_samples_split= 5, n_estimators= 200)
+    model = RandomForestClassifier(random_state=42, bootstrap= True, max_depth= None, min_samples_leaf= 1, min_samples_split= 5, n_estimators= 100)
 
     model.fit(X_train, y_train)
 

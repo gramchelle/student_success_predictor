@@ -4,3 +4,4 @@
 /visualization.py 
 *.bat
 *.csv
+__init__.py

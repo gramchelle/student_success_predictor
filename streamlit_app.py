@@ -5,9 +5,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import shap
 from preprocessing import preprocess_data, smote_data, feature_importances
-from models import stacking_model, voting_model, random_forest_model
+from models import lightgbm_voting_model, stacking_model, voting_model, random_forest_model
 from sklearn.metrics import confusion_matrix, classification_report
-import numpy as np
 
 
 df, processed_df, X_train, X_test, y_train, y_test = preprocess_data()
@@ -32,6 +31,7 @@ st.sidebar.markdown(
     "**student dropout** and **academic success** based on key features."
 )
 
+##### SIDEBAR #####
 st.sidebar.markdown("---")
 
 st.sidebar.subheader("📚 Navigate the App")
@@ -60,6 +60,10 @@ st.sidebar.markdown("""
    
 8. **Conclusion**  
    Summarize findings, limitations, and future improvements.
+   
+9. References
+
+10. About the Developer
 """)
 
 st.sidebar.markdown("---")
@@ -71,7 +75,7 @@ st.sidebar.markdown("---")
 
 st.sidebar.markdown("### 🎯 *\"Empowering education through intelligent prediction.\"*")
     
-    
+##### HEADER: Introduction #####
 st.markdown("## 1. Introduction")
 st.write("""
         This web application showcases the implementation of a supervised machine learning model developed to predict student dropout likelihood 
@@ -82,60 +86,158 @@ st.write("""
 st.subheader("Target Value Distribution")
 st.bar_chart(df['Target'].value_counts(), use_container_width=True)
 
+##### HEADER: Dataset #####
 st.markdown("## 2. Dataset")
 st.write("""
          The dataset used in this app is a collection of students' academic records, personal attributes, and other relevant features.
          It contains information such as students' grades, attendance, socio-economic background, and other factors that may influence their academic performance.
          The dataset is used to train the model and make predictions about students' dropout and academic success.
-         """)
-st.write("The dataset is available on [UCI ML Repository](https://archive.ics.uci.edu/dataset/697/predict+students+dropout+and+academic+success).")
+         
+         This dataset contains:
+        * **Number of rows**: {len(df)}  
+        * **Number of columns**: {len(df.columns)}  
+        * **Target variable**: 'Target' (Dropout, Enrolled, Graduate)""")
+
+st.write("The dataset is available on [UCI ML Repository - Predict Students' Dropout and Academic Success](https://archive.ics.uci.edu/dataset/697/predict+students+dropout+and+academic+success).")
 st.write("### Let's have a look at the data:")
 st.dataframe(df.head())
 st.markdown("Most of the columns are self-explanatory, but some of them are not. Let's have a look at the columns and their meanings:")
-st.markdown("""      
-         - **Age at enrollment**: The age of the student when they enrolled in the course.
-         
-         - **Marital status**: The marital status of the student (e.g., single, married, divorced).
-         
-         - **Application mode**: The mode through which the student applied for the course (e.g., online, in-person).
-         
-         - **Application order**: The order in which the student applied for the course.
-         
-         - **Course**: The course code of the course the student enrolled in.
-         
-         - **Daytime/evening attendance**: Indicates whether the student attended classes during the day or evening.
-         
-         - **Admission grade**: The grade the student received upon admission to the course.
-         
-         - **Displaced**: Indicates whether the student is a displaced person (e.g., refugee).
-         
-         - **Educational special needs**: Indicates whether the student has any educational special needs.
-         
-         - **Debtor**: Indicates whether the student has any outstanding debts related to the course.
-         
-         - **Tuition fees up to date**: Indicates whether the student's tuition fees are up to date.
-         
-         and so on.""")
-st.write("Now, we need this dataset to be processed before using for modelling and prediction, which is called data preprocessing.")
+st.markdown("""
+### 📋 Dataset Column Descriptions
+**0. Marital status**: Student's marital status  
+**1. Application mode**: Method of application (e.g., online, ordinance, transfer, etc.)  
+**2. Application order**: Priority order in the application  
+**3. Course**: Code of the course student enrolled in  
+**4. Daytime/evening attendance**: Whether the student attends during the day or evening  
+**5. Previous qualification**: Type of previous academic qualification  
+**6. Previous qualification (grade)**: Grade obtained in previous qualification  
+**7. Nacionality**: Student's nationality  
+**8. Mother's qualification**: Mother's education level  
+**9. Father's qualification**: Father's education level  
+**10. Mother's occupation**: Mother's job category  
+**11. Father's occupation**: Father's job category  
+**12. Admission grade**: Grade at the time of admission  
+**13. Displaced**: Whether the student lives away from their usual home location  
+**14. Educational special needs**: Whether the student has special educational needs  
+**15. Debtor**: Indicates if the student has outstanding payments  
+**16. Tuition fees up to date**: Whether tuition fees are paid on time  
+**17. Gender**: Gender of the student  
+**18. Scholarship holder**: Whether the student holds a scholarship  
+**19. Age at enrollment**: Student's age at the time of enrollment  
+**20. International**: Whether the student is an international student  
+**21. Curricular units 1st sem (credited)**: Number of credited courses in the 1st semester  
+**22. Curricular units 1st sem (enrolled)**: Number of enrolled courses in the 1st semester  
+**23. Curricular units 1st sem (evaluations)**: Number of course evaluations attended in the 1st semester  
+**24. Curricular units 1st sem (approved)**: Number of courses passed in the 1st semester  
+**25. Curricular units 1st sem (grade)**: Average grade in the 1st semester  
+**26. Curricular units 1st sem (without evaluations)**: Courses without evaluation in the 1st semester  
+**27. Curricular units 2nd sem (credited)**: Number of credited courses in the 2nd semester  
+**28. Curricular units 2nd sem (enrolled)**: Number of enrolled courses in the 2nd semester  
+**29. Curricular units 2nd sem (evaluations)**: Number of course evaluations attended in the 2nd semester  
+**30. Curricular units 2nd sem (approved)**: Number of courses passed in the 2nd semester  
+**31. Curricular units 2nd sem (grade)**: Average grade in the 2nd semester  
+**32. Curricular units 2nd sem (without evaluations)**: Courses without evaluation in the 2nd semester  
+**33. Unemployment rate**: National unemployment rate at the time of enrollment  
+**34. Inflation rate**: National inflation rate at the time of enrollment  
+**35. GDP**: Gross Domestic Product indicator at the time of enrollment  
+**36. Target**: Final status of the student – graduate, dropout, or still enrolled  
+""")
+st.write("Before using this dataset for modeling and prediction, it must first undergo data preprocessing to ensure it is clean, consistent, and ready for analysis.")
 st.write("### Preprocessed data:")
 st.dataframe(processed_df.head())
-
 # st.header("", divider="gray")
-   
+
+###### HEADER: Data Preprocessing and Feature Engineering #####
 st.markdown("## 3. Data Preprocessing and Feature Engineering")
 
-st.write("""### 3.1 Data Preprocessing
-Before training the machine learning models, several preprocessing steps were applied to clean and prepare the dataset:
+st.markdown("""
+1. **Read Raw CSV**  
+- Load the original CSV file (semicolon-separated) into a Pandas DataFrame called `df`.  
+- Keep a copy named `non_processed_df` for reference.
 
-Data Type Conversion:
-Columns were reviewed for appropriate data types. For example, categorical variables encoded as integers were converted to string/object types before further processing.
+2. **Encode Target Variable**  
+   - Use `LabelEncoder` to transform the `"Target"` column (e.g., “dropout”/“graduate”/“enrolled”) into integer labels.
 
-Outlier Detection and Removal:
-Numerical features such as "Admission grade" and "Age at enrollment" were analyzed using box plots and z-score methods to detect and handle extreme values.
+3. **Application Order Adjustment**  
+   - Replace any `0 → 1` and `9 → 5` in the `"Application order"` column to collapse rarely-used codes into a standard range.
 
-Duplicate Records:
-Duplicate rows, if any, were identified and dropped to ensure data integrity.""")
-    
+4. **Age Binning**  
+   - Map `"Age at enrollment"` (actual years) into discrete buckets (0–11) based on these intervals:  
+     - 17–18 → 0,  19 → 1,  20 → 2,  21–23 → 3,  24–27 → 4,  28–30 → 5,  31–33 → 6,  34–36 → 7,  37–41 → 8,  42–45 → 9,  46–50 → 10,  51+ → 11.
+
+5. **Marital Status Cleanup**  
+   - Map any code `6 → 4` and `3 → 4` in `"Marital status"` so that rare categories collapse into a single “Other” category.
+
+6. **Application Mode Consolidation**  
+   - Replace codes `{2, 5, 26, 27, 57} → 10` in `"Application mode"`.  
+     This collapses various special-contingent, transfer, or international subcodes into one “Other” bucket (value 10).
+
+7. **Course Code Correction**  
+   - Replace any `33 → 9556` in `"Course"` to correct a mislabeled program code.
+
+8. **Previous Qualification Simplification**  
+   - Define a helper `simplify_qualification(x)` that maps raw numeric codes into four buckets:  
+     - `1 → "Secondary"`  
+     - `[2,3,4,5,6,39,40,42,43] → "Higher"`  
+     - `[9,10,12,14,15,19,38] → "Basic"`  
+     - Otherwise → "Other".  
+   - Convert that bucket string into integers `{ "Basic": 0, "Secondary": 1, "Higher": 2, "Other": 3 }`.
+
+9. **Compute Combined Previous Qualification Score**  
+   - Create `"previous_qualification"` = (`"Previous qualification (grade)"` / 200) × (`simplified_previous_qualification` integer).  
+   - Then drop the original `"Previous qualification (grade)"` and the intermediate `"Previous qualification"` buckets.
+
+10. **Nationality Binarization**  
+    - Convert `"Nacionality"` = 1 if code == 1 (local), else 0 (international).  
+    - Drop the original `"Nacionality"` column since it’s now binary.
+
+11. **Mother’s & Father’s Qualification Grouping**  
+    - Define `group_mother_qualification(x)` and `group_father_qualification(x)` functions to map each parent’s raw code into one of 5 ordinal levels {0…4}.  
+    - Convert those group labels to `int`.
+
+12. **Mother’s & Father’s Occupation Grouping**  
+    - Define `group_mother_occupation(x)` and `group_father_occupation(x)` to map each parent’s raw occupation codes into categories such as:  
+      - “Unskilled”, “Skilled_Manual”, “Technical”, “Services_Sales”, “Administrative”, “Professional”, “Management”, “Armed_Forces” (father only), “Operator_Driver” (father only), “Other_or_Student”, or “Other.”  
+    - Apply `LabelEncoder` to transform those string categories into integer codes.
+
+13. **Drop Unused Columns**  
+    - Remove `"International"` (if present).  
+    - Drop the six “Curricular units 1st sem” and six “Curricular units 2nd sem” raw columns after computing derived metrics (see next step).  
+    - Drop the raw `"Mother's occupation"`, `"Mother's qualification"`, `"Father's occupation"`, and `"Father's qualification"` after computing combined “knowledge” features (see below).
+
+14. **Inflation Rate & GDP Categorization**  
+    - Map `"Inflation rate"` numeric values into integers `{ -0.8→0,  -0.3→1,  0.3→2,  0.5→3,  0.6→4,  1.4→5,  2.6→6,  2.8→7,  3.7→8 }`.  
+    - Map `"GDP"` values into `{ -4.06→0,  -3.12→1,  -1.70→2,  -0.92→3,  0.32→4,  0.79→5,  1.74→6,  1.79→7,  2.02→8,  3.51→9 }`.
+
+15. **Admission Grade Outlier Removal (IQR Clipping)**  
+    - Compute Q1, Q3 for `"Admission grade"`.  
+    - Remove any rows where `"Admission grade"` is outside `[Q1 – 1.5×IQR,  Q3 + 1.5×IQR]`.
+
+16. **Derived Semester‐Based Features**  
+    - `sem_1_pass_rate` = `("Curricular units 1st sem (approved)" ÷ "Curricular units 1st sem (enrolled)")`  
+    - `sem_2_pass_rate` = `("Curricular units 2nd sem (approved)" ÷ "Curricular units 2nd sem (enrolled)")`  
+    - `sem_1_points_per_credit` = `("Curricular units 1st sem (grade)" ÷ "Curricular units 1st sem (approved)")`  
+    - `sem_2_points_per_credit` = `("Curricular units 2nd sem (grade)" ÷ "Curricular units 2nd sem (approved)")`  
+    - `sem1_success_rate` = `("Curricular units 1st sem (credited)" ÷ "Curricular units 1st sem (enrolled)")`  
+    - `sem2_success_rate` = `("Curricular units 2nd sem (credited)" ÷ "Curricular units 2nd sem (enrolled)")`  
+    - `sem1_evaluation_rate` = `(("Curricular units 1st sem (enrolled)" – "Curricular units 1st sem (without evaluations)") ÷ "Curricular units 1st sem (enrolled)")`  
+    - `sem2_evaluation_rate` = `(("Curricular units 2nd sem (enrolled)" – "Curricular units 2nd sem (without evaluations)") ÷ "Curricular units 2nd sem (enrolled)")`  
+    - `avg_evaluations` = `( "Curricular units 1st sem (evaluations)" + "Curricular units 2nd sem (evaluations)" ) / 2`
+
+17. **Parent Knowledge Features**  
+    - `father_knowledge` = `("Father's occupation code" × "Father's qualification code") / 2`  
+    - `mother_knowledge` = `("Mother's occupation code" × "Mother's qualification code") / 2`
+
+18. **Train/Test Split**  
+    - Define `label = "Target"` and drop it from the feature set.  
+    - Split into `X_train, X_test, y_train, y_test` using `train_test_split(stratify=y, test_size=0.2, random_state=42)`.
+
+19. **SMOTE (Optional, Later Step)**  
+    - After this function returns, SMOTE can be applied to `X_train, y_train` if `st.session_state.smote_enabled` is set.
+
+After completing these steps, the returned `processed_df` (and its train/test subsets) contain only clean, transformed features ready for modeling.
+""")
+
 def visualization(col):
     fig, axes = plt.subplots(2, 2, figsize=(16, 10))
 
@@ -170,39 +272,75 @@ def two_histplots(df, col1, col2):
 
 two_histplots(processed_df, "sem_1_pass_rate", "sem_2_pass_rate")
 
-st.write("""
-### 3.2 Feature Engineering
-To improve model performance and capture underlying patterns, several feature engineering steps were performed:
-
-Encoding Categorical Variables:
-Categorical variables such as "Marital status", "Course", "Gender" were encoded using One-Hot Encoding or Label Encoding depending on the algorithm's requirements.
-
-Aggregated Features:
-New features were created by aggregating or combining existing ones. For example:
-
-"avg_pass_rate" = mean of "sem_1_pass_rate" and "sem_2_pass_rate".
-
-"avg_success_rate" = mean of "sem1_success_rate" and "sem2_success_rate".
-
-Binning Numerical Features:
-Continuous variables like "Age at enrollment" were optionally grouped into bins (e.g., age groups) for visualization or model testing.
-
-Standardization/Normalization:
-Numerical variables were scaled using StandardScaler to normalize the feature space, especially for models sensitive to scale (e.g., logistic regression, SVM).
-
-Target Encoding for High Cardinality Features:
-For features with a large number of categories, such as "Course" or "Previous Qualification", target encoding was considered based on the average dropout rate per category.""")
-
-
+#####  HEADER: Model Overview #####
 st.markdown(""" ## 4. Model Overview""")
 
-st.write("""
-         We are going to use three different models to predict student dropout and academic success:
-            - **Stacking Model**: A meta-model that combines XGBoostClassifier and Random Forest Classifier base models to improve prediction accuracy.
-            - **Voting Model**: An ensemble model that combines predictions from XGBoostClassifier and Random Forest Classifiers classifiers using majority voting.
-            - **Pure Random Forest Model**: A robust classifier that uses multiple decision trees to make predictions based on the majority vote of the trees.
-         # MODEL GÖRSELLERİ EKLE
-         """)
+import streamlit as st
+
+st.markdown("""
+
+In this project, we experimented with several ensemble learning strategies to improve our multi-class classification performance. Below is an overview of the models used, their architecture, and the rationale behind them.
+
+---
+
+### :rocket: 1. Stacking Classifier (Best Performing Model)
+
+We used a **Stacking Classifier** that combines predictions from multiple base models (XGBoost and Random Forest) using a meta-model (Logistic Regression). This model outperformed others in terms of accuracy.
+
+**Why Stacking?**  
+Stacking helps to reduce model bias and variance by combining the strengths of different algorithms. The base models capture diverse patterns, and the meta-learner synthesizes this information to make better generalizations.
+
+**Model Components:**
+- **XGBoost:** Captures non-linear relationships efficiently.
+- **Random Forest:** Reduces overfitting through bootstrapped aggregation.
+- **Logistic Regression:** Combines base predictions in a linear, interpretable way.
+
+---
+
+### :rocket: 2. Voting Classifier (Alternative Ensemble Method)
+
+Another ensemble technique used was **Soft Voting**, where predictions are made based on class probabilities averaged over models.
+
+**Why Voting?**  
+Voting is a simpler alternative to stacking and often effective when base models are individually strong and diverse.
+
+**Models Used:**
+- XGBoost  
+- Random Forest  
+- LightGBM
+
+**Voting Strategy:**
+- `voting='soft'` ensures models with higher confidence contribute more to final decisions.
+
+---
+
+### :rocket: 3. LightGBM + Random Forest Voting (Alternative Ensemble)
+
+This version uses **LightGBM and Random Forest** in a soft voting scheme.
+
+**Why LightGBM?**  
+LightGBM is a highly efficient gradient boosting algorithm that is particularly strong with large datasets and can reduce training time drastically.
+
+---
+
+### :rocket: 4. Baseline Model: Random Forest
+
+We also used a simple **Random Forest** model as a baseline to compare performance with ensemble methods.
+
+**Why Random Forest?**  
+It is robust, handles overfitting well, and often works out-of-the-box for tabular data with minimal preprocessing.
+
+---
+
+## 📈 Summary
+
+| Model Type             | Algorithms Used                     | Notes                                 |
+|------------------------|-------------------------------------|----------------------------------------|
+| **Stacking Classifier**| XGBoost, RandomForest → LogisticReg | Best accuracy, combines diverse models |
+| **Voting Classifier**  | XGBoost + RF / LightGBM + RF        | Soft voting based on probability       |
+| **Random Forest**      | Random Forest only                  | Simple and fast baseline               |
+""")
+
 
 smote_enabled_col, smote_enabled_description = st.columns(2)
 
@@ -216,9 +354,9 @@ with smote_enabled_col:
 
 with smote_enabled_description:
     if st.session_state.smote_enabled:
-        st.write("SMOTE is enabled to handle class imbalance in the training data.")
+        st.write("🟢 SMOTE is enabled to handle class imbalance in the training data.")
     else:
-        st.write("SMOTE is not enabled. The training data will be used as is without oversampling.")
+        st.write("🔴 SMOTE is not enabled. The training data will be used as is without oversampling.")
 
 if st.session_state.smote_enabled:
     X_train, y_train = smote_data(X_train, y_train)
@@ -231,20 +369,21 @@ st.write("Now, we will train three different models: Stacking Model, Voting Mode
 
 if 'accuracy_df' not in st.session_state:
     st.session_state.accuracy_df = {
-        "Stacking Model Accuracy": "Not run yet",
-        "Voting Model Accuracy": "Not run yet",
-        "Random Forest Model Accuracy": "Not run yet"
+        "XGBoost & RF Stacking Model Accuracy": "Not run yet",
+        "XGBoost + RF Voting Model Accuracy": "Not run yet",
+        "Random Forest Model Accuracy": "Not run yet",
+        "LightGBM & RF Voting Model Accuracy": "Not run yet"
     }
 
 # Train models buttons
-col1, col2, col3 = st.columns(3)
-col1_is_run, col2_is_run, col3_is_run = False, False, False
+col1, col2, col3, col4 = st.columns(4)
+col1_is_run, col2_is_run, col3_is_run, col4_is_run = False, False, False, False
 
 with col1:
-    if st.button("Train Stacking Model"):
+    if st.button("Train XGBoost + RF Stacking Model"):
         stacking_clf, y_pred, stacking_accuracy_score, stacking_rf = stacking_model.run_model(X_train, X_test, y_train, y_test)
         st.markdown(f"Test set accuracy: {stacking_accuracy_score:.2f}")
-        st.session_state.accuracy_df["Stacking Model Accuracy"] = f"{stacking_accuracy_score:.2f}%"
+        st.session_state.accuracy_df["XGBoost & RF Stacking Model Accuracy"] = f"{stacking_accuracy_score:.2f}%"
 
         st.session_state.stacking_clf = stacking_clf
         st.session_state.stacking_chart_data = pd.DataFrame({
@@ -254,10 +393,10 @@ with col1:
         st.session_state.stacking_is_run = True
 
 with col2:
-    if st.button("Train Voting Model"):
+    if st.button("Train XGBoost + RF Voting Model"):
         voting_clf, y_pred, voting_accuracy_score, voting_rf = voting_model.run_model(X_train, X_test, y_train, y_test)
         st.markdown(f"Test set accuracy: {voting_accuracy_score:.2f}")
-        st.session_state.accuracy_df["Voting Model Accuracy"] = f"{voting_accuracy_score:.2f}%"
+        st.session_state.accuracy_df["XGBoost & RF Voting Model Accuracy"] = f"{voting_accuracy_score:.2f}%"
 
         st.session_state.voting_clf = voting_clf
         st.session_state.voting_chart_data = pd.DataFrame({
@@ -281,24 +420,42 @@ with col3:
         st.session_state.rf_is_run = True
         print(processed_df.columns.tolist())
 
+with col4:
+    if st.button("Train LightGBM + RF Voting Model"):
+        voting_clf, y_pred, voting_accuracy_score = lightgbm_voting_model.run_model()
+
+        st.markdown(f"Test set accuracy: {voting_accuracy_score:.2f}")
+        st.session_state.accuracy_df["LightGBM & RF Voting Model Accuracy"] = f"{voting_accuracy_score:.2f}%"
+
+        st.session_state.lgbm_voting_clf = voting_clf
+        st.session_state.lgbm_voting_chart_data = pd.DataFrame({
+            "True Labels": pd.Series(y_test).astype(int).reset_index(drop=True),
+            "Predictions": pd.Series(y_pred).astype(int)
+        })
+        st.session_state.lgbm_voting_is_run = True
+
 accuracy_df = pd.DataFrame.from_dict(st.session_state.accuracy_df, orient='index', columns=["Accuracy"])
 st.dataframe(accuracy_df)
 
-# Show results buttons
-col1, col2, col3 = st.columns(3)
+#### SHOW RESULTS BUTTONS ####
+col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    if st.button("Show Stacking Model Results"):
+    if st.button("Show XGBoost + RF Stacking Model Results"):
         st.session_state.show_stacking = True
         print(processed_df.columns.tolist())
 
 with col2:
-    if st.button("Show Voting Model Results"):
+    if st.button("Show XGBoost + RF Voting Model Results"):
         st.session_state.show_voting = True
 
 with col3:
     if st.button("Show Random Forest Results"):
         st.session_state.show_rf = True
+        
+with col4:
+    if st.button("Show LightGBM + RF Voting Results"):
+        st.session_state.show_lgbm_voting = True
 
 def show_classification_report(y_true, y_pred, title):
     report = classification_report(y_true, y_pred, output_dict=True)
@@ -342,9 +499,18 @@ if st.session_state.get("show_rf"):
             sns.barplot(x=feature_importances_df["importance"], y=feature_importances_df["feature"], ax=ax)
             ax.set_title("Feature Importances")
             st.pyplot(fig)
-
     else:
         st.warning("Train random forest model first.")
+        
+if st.session_state.get("show_lgbm_voting"):
+    if st.session_state.get("lgbm_voting_is_run", False):
+        temp_df = st.session_state.lgbm_voting_chart_data
+        model = st.session_state.lgbm_voting_clf
+        show_classification_report(temp_df["True Labels"], temp_df["Predictions"], "LightGBM + RF Voting Model")
+        X_sample = X_test.sample(n=100, random_state=42)
+    else:
+        st.warning("Train LightGBM + RF Voting Model first.")
+
 
 ##### HEADER: Features #####
 st.markdown("## 5. Features")
@@ -429,7 +595,7 @@ mapped_age = age_bucket_map.get(int(age_input), int(df["Age at enrollment"].mode
 # 2) Marital status
 st.subheader("2) What is your marital status?")
 default_marital = int(df["Marital status"].mode()[0])
-marital_map = {"Single": 0, "Married": 1, "Divorced": 2, "Widowed/Other": 4}
+marital_map = {"Single": 1, "Married": 2, "Divorced": 4, "Widowed/Other": 3}
 default_marital_label = [k for k, v in marital_map.items() if v == default_marital][0]
 marital = st.selectbox(
     "Select one",
@@ -439,48 +605,99 @@ marital = st.selectbox(
 mapped_marital = marital_map[marital]
 
 # 3) Application mode
+df2 = df.copy()
+df2['Application mode'] = df2['Application mode'].replace({
+    2: 10,
+    5: 10,
+    26: 10,
+    27: 10,
+    57: 10
+})
+
+application_mode_dict = {
+    1: "1st Phase – General Contingent",
+    10: "Special Admission Regime / Ordinances / Azores / International / Others",
+    7: "Holders of Other Higher Courses",
+    15: "International Student (Bachelor)",
+    16: "1st Phase – Special Contingent (Madeira Island)",
+    17: "2nd Phase – General Contingent",
+    18: "3rd Phase – General Contingent",
+    39: "Over 23 Years Old",
+    42: "Transfer",
+    43: "Change of Course",
+    44: "Technological Specialization Diploma Holders",
+    51: "Change of Institution/Course",
+    53: "Short Cycle Diploma Holders"
+}
+
+available_codes = sorted(df2["Application mode"].unique())
+available_labels = [f"{code} - {application_mode_dict.get(code, 'Other')}" for code in available_codes]
+
 st.subheader("3) How did you apply?")
-# preprocess_data() içinde “Application mode” sütununa uyguladığınız replace adımlarına karşılık 
-# burada örnek bir label→kod map’i tanımlıyoruz. Gerçek kategorileriniz farklı ise, df["Application mode"].unique()’yi kullanın.
-app_mode_map = {"Online": 1, "In-person": 2, "Phone": 3, "Email": 4, "Other": int(df["Application mode"].mode()[0])}
-default_app_mode = int(df["Application mode"].mode()[0])
-default_app_label = [k for k, v in app_mode_map.items() if v == default_app_mode]
-default_app_index = 0 if not default_app_label else list(app_mode_map.keys()).index(default_app_label[0])
-app_mode = st.selectbox(
-    "Select one",
-    options=list(app_mode_map.keys()),
-    index=default_app_index
+
+default_code = int(df2["Application mode"].mode()[0])
+default_index = available_codes.index(default_code)
+
+selected_label = st.selectbox(
+    "Select your application mode",
+    options=available_labels,
+    index=default_index
 )
-mapped_app_mode = app_mode_map[app_mode]
+
+mapped_app_mode = int(selected_label.split(" - ")[0])
 
 # 4) Application order
 st.subheader("4) What order was this university in your choices?")
+
 default_order = int(df["Application order"].median())
 app_order = st.slider(
     "Pick a number", 
-    min_value=int(df["Application order"].min()), 
-    max_value=int(df["Application order"].max()), 
+    min_value=int(df["Application order"].min() + 1), 
+    max_value=int(df["Application order"].max() + 1), 
     value=default_order,
     key="app_order_slider",
 )
-# preprocess_data()’daki replace adımı:
 if app_order == 0:
     mapped_order = 1
 elif app_order == 9:
     mapped_order = 5
 else:
-    mapped_order = app_order
+    mapped_order = app_order - 1
 
 # 5) Course
+course_dict = {
+    171: "Animation and Multimedia Design",
+    8014: "Social Service (evening attendance)",
+    9003: "Agronomy",
+    9070: "Communication Design",
+    9085: "Veterinary Nursing",
+    9119: "Informatics Engineering",
+    9130: "Equinculture",
+    9147: "Management",
+    9238: "Social Service",
+    9254: "Tourism",
+    9500: "Nursing",
+    9556: "Oral Hygiene",
+    9670: "Advertising and Marketing Management",
+    9773: "Journalism and Communication",
+    9853: "Basic Education",
+    9991: "Management (evening attendance)"
+}
+
 st.subheader("5) What is your course code?")
+
 default_course = int(df["Course"].mode()[0])
 course_options = sorted(df["Course"].unique())
-course = st.selectbox(
+
+course_labels = [f"{code} - {course_dict.get(code, 'Unknown')}" for code in course_options]
+
+selected_label = st.selectbox(
     "Select the numeric course code",
-    options=course_options,
+    options=course_labels,
     index=course_options.index(default_course)
 )
-mapped_course = int(course)
+
+mapped_course = int(selected_label.split(" - ")[0])
 
 # 6) Daytime/evening attendance
 st.subheader("6) Was your attendance daytime or evening?")
@@ -943,5 +1160,9 @@ st.write("""
             The app is a valuable tool for educators, administrators, and policymakers to understand students' academic performance and make informed decisions to improve their outcomes.
             """)
 
+st.markdown("## 9. References")
+st.write("""Realinho, V., Vieira Martins, M., Machado, J., & Baptista, L. (2021). Predict Students' Dropout and Academic Success [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C5MC89.""")
+
+st.markdown("## 10. About the Author")
 st.markdown("You can reach me out at [LinkedIn](https://www.linkedin.com/in/ozlemnurduman/), [GitHub](https://www.github.com/gramchelle) or [Kaggle](https://www.kaggle.com/gramchelle).")
 st.markdown("Going to the stars together! :tada:")
