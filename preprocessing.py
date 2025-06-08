@@ -260,3 +260,14 @@ def smote_data(X_train, y_train):
     return X_resampled, y_resampled
 
 
+def feature_importances(model, X_train):
+    importances = model.feature_importances_
+    feature_names = X_train.columns
+
+    importance_df = pd.DataFrame({
+        'feature': feature_names,
+        'importance': importances
+    }).sort_values(by='importance', ascending=False)
+
+    print(importance_df)
+    return importance_df

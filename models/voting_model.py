@@ -33,7 +33,7 @@ def run_model(X_train, X_test, y_train, y_test):
     accuracy = accuracy_score(y_test, y_pred) * 100
     print(classification_report(y_test, y_pred))
     
-    return voting_clf, y_pred, accuracy
+    return voting_clf, y_pred, accuracy, rf_model
 
 def predict(test_data, X_train, y_train, X_test, y_test):
     """ Predict using the trained voting model """

@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import shap
-from preprocessing import preprocess_data, smote_data
+from preprocessing import preprocess_data, smote_data, feature_importances
 from models import stacking_model, voting_model, random_forest_model
 from sklearn.metrics import confusion_matrix, classification_report
 import numpy as np
@@ -14,36 +14,70 @@ df, processed_df, X_train, X_test, y_train, y_test = preprocess_data()
 df_copy = df.copy()
 
 st.write("""
-         # Students' Dropout and Academic Success
+         # Students' Dropout and Academic Success :rocket:
          ### Abstract
-         This app is developed to demonstrate a Supervised Machine Learning model that predicts students' dropout and academic success.
-            The model is trained on a dataset containing various features related to students' academic performance and personal attributes, allowing users to
-            interact with the model and visualize the predictions.
+         This application demonstrates a supervised machine learning model designed to predict student dropout and academic performance. 
+         Trained on a dataset comprising diverse academic and personal attributes of students, the model enables users to interactively 
+         explore predictions and visualize outcomes through an intuitive interface.
          """)
 
-with st.sidebar:
-    st.header("Students' Dropout and Academic Success")
-    st.subheader("Supervised Classification Machine Learning Model")
-    st.write("""This app is developed to demonstrate a Supervised Machine Learning model that predicts students' dropout and academic success.""")
-    st.markdown("""## Table of Contents""")
-    st.markdown("""
-    ### 1. Introduction
-    ### 2. Dataset
-    ### 3. Model Overview
-    ### 4. Features
-    ### 5. Model Performance
-    ### 6. Predictions
-    ### 7. Conclusion
-    """)
-    st.write("\n\n")
-    st.markdown("Developed by _Özlem Nur Duman_ with :blue[Streamlit] and _pure_ :blue[Python].")
+st.sidebar.title("🎓 Student Dropout & Success Predictor")
+st.sidebar.markdown("*A Supervised Classification ML App*")
+
+st.sidebar.markdown("---")
+
+st.sidebar.subheader("📊 Purpose")
+st.sidebar.markdown(
+    "An interactive app built with **Streamlit** and **Python**, showcasing a machine learning model that predicts "
+    "**student dropout** and **academic success** based on key features."
+)
+
+st.sidebar.markdown("---")
+
+st.sidebar.subheader("📚 Navigate the App")
+st.sidebar.markdown("""
+### 📌 Table of Contents
+1. **Introduction**  
+   Understand the problem and the goal of this project.
+
+2. **Dataset**  
+   Learn about the data source and its key attributes.
+
+3. **Data Preprocessing & Feature Engineering**  
+   See how raw data is cleaned and transformed for modeling.
+
+4. **Features**  
+   Explore the most relevant variables used in prediction.
+
+5. **Model Overview**  
+   Discover the machine learning models applied.
+
+6. **Model Performance**  
+   Analyze metrics and visualizations to assess effectiveness.
+
+7. **Predictions**  
+   Interact with the model and see prediction results.
+   
+8. **Conclusion**  
+   Summarize findings, limitations, and future improvements.
+""")
+
+st.sidebar.markdown("---")
+
+st.sidebar.markdown("👩‍💻 *Developed with care by*  \n**Özlem Nur Duman**")
+st.sidebar.markdown("💡 Powered by **Streamlit** & **Python**")
+
+st.sidebar.markdown("---")
+
+st.sidebar.markdown("### 🎯 *\"Empowering education through intelligent prediction.\"*")
     
     
 st.markdown("## 1. Introduction")
 st.write("""
-         This app is developed to demonstrate a Supervised Machine Learning model that predicts students' dropout and academic success.
-         The model is trained on a dataset containing various features related to students' academic performance and personal attributes.
-         The app allows users to interact with the model and visualize the predictions.
+        This web application showcases the implementation of a supervised machine learning model developed to predict student dropout likelihood 
+        and academic success. By leveraging a dataset enriched with features related to students' educational history, demographic background, 
+        and performance metrics, the model offers data-driven insights into academic outcomes. Users can interact with the trained model, examine 
+        prediction results, and gain a better understanding of the factors influencing student retention and achievement.
          """)
 st.subheader("Target Value Distribution")
 st.bar_chart(df['Target'].value_counts(), use_container_width=True)
@@ -57,24 +91,116 @@ st.write("""
 st.write("The dataset is available on [UCI ML Repository](https://archive.ics.uci.edu/dataset/697/predict+students+dropout+and+academic+success).")
 st.write("### Let's have a look at the data:")
 st.dataframe(df.head())
+st.markdown("Most of the columns are self-explanatory, but some of them are not. Let's have a look at the columns and their meanings:")
+st.markdown("""      
+         - **Age at enrollment**: The age of the student when they enrolled in the course.
+         
+         - **Marital status**: The marital status of the student (e.g., single, married, divorced).
+         
+         - **Application mode**: The mode through which the student applied for the course (e.g., online, in-person).
+         
+         - **Application order**: The order in which the student applied for the course.
+         
+         - **Course**: The course code of the course the student enrolled in.
+         
+         - **Daytime/evening attendance**: Indicates whether the student attended classes during the day or evening.
+         
+         - **Admission grade**: The grade the student received upon admission to the course.
+         
+         - **Displaced**: Indicates whether the student is a displaced person (e.g., refugee).
+         
+         - **Educational special needs**: Indicates whether the student has any educational special needs.
+         
+         - **Debtor**: Indicates whether the student has any outstanding debts related to the course.
+         
+         - **Tuition fees up to date**: Indicates whether the student's tuition fees are up to date.
+         
+         and so on.""")
 st.write("Now, we need this dataset to be processed before using for modelling and prediction, which is called data preprocessing.")
-# GÖRSELLEŞTİRMELER EKLE
-# Feature Engineering Adımlarından vb bahset
-# Sütun isimlerinin neleri temsil ettiğinden vb bahset
 st.write("### Preprocessed data:")
 st.dataframe(processed_df.head())
 
 # st.header("", divider="gray")
    
-st.markdown("## 3. Data Preprocessing")
+st.markdown("## 3. Data Preprocessing and Feature Engineering")
+
+st.write("""### 3.1 Data Preprocessing
+Before training the machine learning models, several preprocessing steps were applied to clean and prepare the dataset:
+
+Data Type Conversion:
+Columns were reviewed for appropriate data types. For example, categorical variables encoded as integers were converted to string/object types before further processing.
+
+Outlier Detection and Removal:
+Numerical features such as "Admission grade" and "Age at enrollment" were analyzed using box plots and z-score methods to detect and handle extreme values.
+
+Duplicate Records:
+Duplicate rows, if any, were identified and dropped to ensure data integrity.""")
+    
+def visualization(col):
+    fig, axes = plt.subplots(2, 2, figsize=(16, 10))
+
+    sns.histplot(df[col], kde=True, ax=axes[0, 0])
+    axes[0, 0].set_title(f'Distribution of {col}')
+
+    sns.boxplot(x=df["Target"], y=df[col], ax=axes[0, 1])
+    axes[0, 1].set_title(f'Boxplot of {col} by Target')
+
+    sns.histplot(processed_df[col], kde=True, ax=axes[1, 0])
+    axes[1, 0].set_title(f'Distribution of {col} after IQR Clipping')
+
+    sns.boxplot(x=processed_df["Target"], y=processed_df[col], ax=axes[1, 1])
+    axes[1, 1].set_title(f'IQR Clipped {col} by Target')
+
+    plt.tight_layout()
+    st.pyplot(fig)
+    
+visualization("Admission grade")
+
+def two_histplots(df, col1, col2):
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5)) #1d
+    
+    sns.histplot(df[col1], kde=True, ax=axes[0])
+    axes[0].set_title(f'Distribution of {col1}')
+    
+    sns.histplot(df[col2], kde=True, ax=axes[1])
+    axes[1].set_title(f'Distribution of {col2}')
+    
+    st.pyplot(fig)
 
 
+two_histplots(processed_df, "sem_1_pass_rate", "sem_2_pass_rate")
+
+st.write("""
+### 3.2 Feature Engineering
+To improve model performance and capture underlying patterns, several feature engineering steps were performed:
+
+Encoding Categorical Variables:
+Categorical variables such as "Marital status", "Course", "Gender" were encoded using One-Hot Encoding or Label Encoding depending on the algorithm's requirements.
+
+Aggregated Features:
+New features were created by aggregating or combining existing ones. For example:
+
+"avg_pass_rate" = mean of "sem_1_pass_rate" and "sem_2_pass_rate".
+
+"avg_success_rate" = mean of "sem1_success_rate" and "sem2_success_rate".
+
+Binning Numerical Features:
+Continuous variables like "Age at enrollment" were optionally grouped into bins (e.g., age groups) for visualization or model testing.
+
+Standardization/Normalization:
+Numerical variables were scaled using StandardScaler to normalize the feature space, especially for models sensitive to scale (e.g., logistic regression, SVM).
+
+Target Encoding for High Cardinality Features:
+For features with a large number of categories, such as "Course" or "Previous Qualification", target encoding was considered based on the average dropout rate per category.""")
 
 
 st.markdown(""" ## 4. Model Overview""")
 
 st.write("""
-         we are gonna use stacking model and voting models, click to train the data accordingly.
+         We are going to use three different models to predict student dropout and academic success:
+            - **Stacking Model**: A meta-model that combines XGBoostClassifier and Random Forest Classifier base models to improve prediction accuracy.
+            - **Voting Model**: An ensemble model that combines predictions from XGBoostClassifier and Random Forest Classifiers classifiers using majority voting.
+            - **Pure Random Forest Model**: A robust classifier that uses multiple decision trees to make predictions based on the majority vote of the trees.
          # MODEL GÖRSELLERİ EKLE
          """)
 
@@ -84,8 +210,9 @@ if "smote_enabled" not in st.session_state:
     st.session_state.smote_enabled = False
 
 with smote_enabled_col:
-    if st.button("Enable SMOTE"):
+    if st.button("Enable SMOTE", key="enable_smote_button"):
         st.session_state.smote_enabled = True
+        #st.button("Disable SMOTE", key="enable_smote_button", disabled=True)
 
 with smote_enabled_description:
     if st.session_state.smote_enabled:
@@ -100,7 +227,6 @@ if st.session_state.smote_enabled:
 else:
     X_train, y_train = X_train, y_train
 
-
 st.write("Now, we will train three different models: Stacking Model, Voting Model, and Random Forest Model. Each model will be trained on the preprocessed dataset and evaluated for its accuracy.")
 
 if 'accuracy_df' not in st.session_state:
@@ -110,12 +236,13 @@ if 'accuracy_df' not in st.session_state:
         "Random Forest Model Accuracy": "Not run yet"
     }
 
+# Train models buttons
 col1, col2, col3 = st.columns(3)
 col1_is_run, col2_is_run, col3_is_run = False, False, False
 
 with col1:
     if st.button("Train Stacking Model"):
-        stacking_clf, y_pred, stacking_accuracy_score = stacking_model.run_model(X_train, X_test, y_train, y_test)
+        stacking_clf, y_pred, stacking_accuracy_score, stacking_rf = stacking_model.run_model(X_train, X_test, y_train, y_test)
         st.markdown(f"Test set accuracy: {stacking_accuracy_score:.2f}")
         st.session_state.accuracy_df["Stacking Model Accuracy"] = f"{stacking_accuracy_score:.2f}%"
 
@@ -128,7 +255,7 @@ with col1:
 
 with col2:
     if st.button("Train Voting Model"):
-        voting_clf, y_pred, voting_accuracy_score = voting_model.run_model(X_train, X_test, y_train, y_test)
+        voting_clf, y_pred, voting_accuracy_score, voting_rf = voting_model.run_model(X_train, X_test, y_train, y_test)
         st.markdown(f"Test set accuracy: {voting_accuracy_score:.2f}")
         st.session_state.accuracy_df["Voting Model Accuracy"] = f"{voting_accuracy_score:.2f}%"
 
@@ -141,6 +268,7 @@ with col2:
 
 with col3:
     if st.button("Train Random Forest Model"):
+        global rf_model
         rf_model, y_pred, rf_accuracy_score = random_forest_model.run_model(X_train, X_test, y_train, y_test)
         st.markdown(f"Test set accuracy: {rf_accuracy_score:.2f}")
         st.session_state.accuracy_df["Random Forest Model Accuracy"] = f"{rf_accuracy_score:.2f}%"
@@ -156,7 +284,7 @@ with col3:
 accuracy_df = pd.DataFrame.from_dict(st.session_state.accuracy_df, orient='index', columns=["Accuracy"])
 st.dataframe(accuracy_df)
 
-# Sonuç gösterme butonları
+# Show results buttons
 col1, col2, col3 = st.columns(3)
 
 with col1:
@@ -182,31 +310,43 @@ def show_classification_report(y_true, y_pred, title):
 
 if st.session_state.get("show_stacking"):
     if st.session_state.get("stacking_is_run", False):
-        df = st.session_state.stacking_chart_data
+        temp_df = st.session_state.stacking_chart_data
         model = st.session_state.stacking_clf
-        show_classification_report(df["True Labels"], df["Predictions"], "Stacking Model")
+        show_classification_report(temp_df["True Labels"], temp_df["Predictions"], "Stacking Model")
         X_sample = X_test.sample(n=100, random_state=42)
     else:
         st.warning("Train stacking model first.")
 
 if st.session_state.get("show_voting"):
     if st.session_state.get("voting_is_run", False):
-        df = st.session_state.voting_chart_data
+        temp_df = st.session_state.voting_chart_data
         model = st.session_state.voting_clf
-        show_classification_report(df["True Labels"], df["Predictions"], "Voting Model")
+        show_classification_report(temp_df["True Labels"], temp_df["Predictions"], "Voting Model")
         X_sample = X_test.sample(n=100, random_state=42)
     else:
         st.warning("Train voting model first.")
 
 if st.session_state.get("show_rf"):
     if st.session_state.get("rf_is_run", False):
-        df = st.session_state.rf_chart_data
-        model = st.session_state.rf_model
-        show_classification_report(df["True Labels"], df["Predictions"], "Random Forest Model")
+        temp_df = st.session_state.rf_chart_data
+        model = st.session_state.get("rf_model")  # BÖYLE KULLAN
+        show_classification_report(temp_df["True Labels"], temp_df["Predictions"], "Random Forest Model")
         X_sample = X_test.sample(n=100, random_state=42)
+        
+        if st.button("Show Feature Importances", key="show_feature_importances"):
+            st.subheader("Feature Importances")
+            feature_importances_df = feature_importances(model, X_train)
+            st.dataframe(feature_importances_df)
+
+            fig, ax = plt.subplots(figsize=(10, 6))
+            sns.barplot(x=feature_importances_df["importance"], y=feature_importances_df["feature"], ax=ax)
+            ax.set_title("Feature Importances")
+            st.pyplot(fig)
+
     else:
         st.warning("Train random forest model first.")
 
+##### HEADER: Features #####
 st.markdown("## 5. Features")
 st.write("""
             The model uses a variety of features to make predictions about students' dropout and academic success.
@@ -225,6 +365,8 @@ with feature_col2:
     st.markdown("""### Processed dataset columns (after preprocessing):""")
     st.write(processed_df.columns.tolist())
 
+
+##### HEADER: Predictions #####
 st.markdown("## 6. Predictions")
 st.write("""
             The model allows users to make predictions about students' dropout and academic success based on the input features.
@@ -266,7 +408,6 @@ age_input = st.slider(
     value=int(df["Age at enrollment"].mode()[0]),
     key="age_slider"
 )
-    
     
 # preprocess_data() içindeki bucket’lama adımını tekrar uygula:
 age_bucket_map = {
@@ -748,16 +889,14 @@ st.subheader("Model Input:")
 st.dataframe(input_df)
 
 # ------------ PREDICTION ------------
-# (Eğitilmiş 3 modelinizle sırasıyla predict yapıp sonucu yazdırabilirsiniz.)
 
-# Örneğin:
-# stacking_pred = stacking_clf.predict(input_df)[0]
-# voting_pred   = voting_clf.predict(input_df)[0]
-# rf_pred       = rf_clf.predict(input_df)[0]
-
-# st.write(f"Stacking Model Prediction: {stacking_pred}")
-# st.write(f"Voting Model Prediction:   {voting_pred}")
-# st.write(f"Random Forest Prediction:  {rf_pred}")
+def mapping_to_label(prediction):
+    if prediction == 0:
+        return "Dropout"
+    elif prediction == 1:
+        return "Enrolled"
+    else:
+        return "Graduate"
 
 column1, column2, column3 = st.columns(3)
 
@@ -765,7 +904,7 @@ with column1:
     if st.button("Predict with Stacking Model"):
         if 'stacking_clf' in st.session_state:
             stacking_pred = st.session_state.stacking_clf.predict(input_df)[0]
-            st.write(f"Stacking Model Prediction: {stacking_pred}")
+            st.write(f"Stacking Model Prediction: {mapping_to_label(stacking_pred)}")
         else:
             st.warning("Stacking model is not trained yet.")
             
@@ -773,7 +912,7 @@ with column2:
     if st.button("Predict with Voting Model"):
         if 'voting_clf' in st.session_state:
             voting_pred = st.session_state.voting_clf.predict(input_df)[0]
-            st.write(f"Voting Model Prediction: {voting_pred}")
+            st.write(f"Voting Model Prediction: {mapping_to_label(voting_pred)}")
         else:
             st.warning("Voting model is not trained yet.")
             
@@ -781,35 +920,15 @@ with column3:
     if st.button("Predict with Random Forest Model"):
         if 'rf_model' in st.session_state:
             rf_pred = st.session_state.rf_model.predict(input_df)[0]
-            st.write(f"Random Forest Prediction: {rf_pred}")
+            st.write(f"Random Forest Prediction: {mapping_to_label(rf_pred)}")
         else:
-            st.warning("Random Forest model is not trained yet.")
-
-
-    
-    
-    
-    
-    
-    
+            st.warning("Random Forest model is not trained yet.")  
     
 
 st.markdown("## 7. Model Performance")
-st.write("""
-            The model is evaluated using various metrics such as accuracy, precision, recall, and F1-score to ensure its performance and reliability.
-            The model's performance is assessed on a test dataset that is separate from the training dataset to ensure that the model generalizes well to unseen data.
-            The model's performance is visualized using confusion matrices, ROC curves, and other relevant visualizations to provide insights into its predictive capabilities.
-            The model achieves a high accuracy rate, indicating its effectiveness in predicting students' dropout and academic success.
-            The model's performance is continuously monitored and improved based on feedback and new data to ensure its reliability and accuracy.
-            """)
-
-
-
-
-
-
-
-
+st.write("""The performance of the model is evaluated using several key metrics, including accuracy, precision, recall, and F1-score, to ensure both its effectiveness and reliability. These metrics are calculated on a test dataset that is kept separate from the training data, allowing for an unbiased assessment of the model's generalization to unseen instances.
+        To gain deeper insights into the model’s predictive capabilities, performance is also visualized using confusion matrices, ROC curves, and other relevant visual tools. These visualizations help identify the strengths and potential weaknesses of the model across different classes.
+        The model demonstrates a high level of accuracy, indicating its strong performance in predicting both student dropout and academic success. Additionally, the model's performance is continuously monitored and refined based on new data and user feedback, ensuring its long-term reliability and relevance.""")
 
 
 st.markdown("## 8. Conclusion")
@@ -825,11 +944,4 @@ st.write("""
             """)
 
 st.markdown("You can reach me out at [LinkedIn](https://www.linkedin.com/in/ozlemnurduman/), [GitHub](https://www.github.com/gramchelle) or [Kaggle](https://www.kaggle.com/gramchelle).")
-
-
-
-
-    
-
-st.header("Header with a divider", divider = "rainbow")
-st.header("_STREAMLIT_ is :blue[cool] :sunglasses: :rocket: :red[***ÖZLEM***]")
+st.markdown("Going to the stars together! :tada:")
