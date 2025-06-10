@@ -3,11 +3,15 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.metrics import roc_curve, auc, roc_auc_score
+import plotly.graph_objects as go
+import os
+import sys
 #import shap
 from preprocessing import preprocess_data, smote_data, feature_importances
 from models import lightgbm_voting_model, stacking_model, voting_model, random_forest_model
 from sklearn.metrics import confusion_matrix, classification_report
-import visualization as vis
+import visualize.visualization as vis
 
 
 df, processed_df, X_train, X_test, y_train, y_test = preprocess_data()
@@ -308,7 +312,6 @@ Voting is a simpler alternative to stacking and often effective when base models
 **Models Used:**
 - XGBoost  
 - Random Forest  
-- LightGBM
 
 **Voting Strategy:**
 - `voting='soft'` ensures models with higher confidence contribute more to final decisions.
@@ -349,6 +352,28 @@ vis.comp(df, processed_df)
 #vis.plot_parent_correlations(df, "Target")
 
 #vis.visualize_preprocessing_effects(df, processed_df)
+st.write("""### Set Train Test Split """)
+st.slider("Select the train-test split ratio",
+    min_value=0.1,
+    max_value=0.9,
+    value=0.8,
+    step=0.1,
+    key="train_test_split_ratio"
+)
+
+colm1, colm2 = st.columns(2)
+
+with colm1:
+    if st.button("Set Train Test Split"):
+        train_test_split_ratio = st.session_state.train_test_split_ratio
+        df, processed_df, X_train, X_test, y_train, y_test = preprocess_data(trainsize=train_test_split_ratio)
+        
+with colm2:
+    if "train_test_split_ratio" in st.session_state:
+        train_test_split_ratio = st.session_state.train_test_split_ratio
+        df, processed_df, X_train, X_test, y_train, y_test = preprocess_data(trainsize=train_test_split_ratio)
+        st.write(f"Train set size: {len(X_train)}, Test set size: {len(X_test)}")
+        st.write("Train and test sets have been updated based on the selected ratio.")
 
 st.write("""### SMOTE
 Since our Target feature has a imbalanced distribution, we also implemented **SMOTE (Synthetic Minority Over-sampling Technique)** to handle class imbalance during training. This technique generates synthetic samples for the minority class, improving model performance on underrepresented classes.
@@ -499,7 +524,7 @@ if st.session_state.get("show_voting"):
 if st.session_state.get("show_rf"):
     if st.session_state.get("rf_is_run", False):
         temp_df = st.session_state.rf_chart_data
-        model = st.session_state.get("rf_model")  # BÖYLE KULLAN
+        model = st.session_state.get("rf_model")
         show_classification_report(temp_df["True Labels"], temp_df["Predictions"], "Random Forest Model")
         X_sample = X_test.sample(n=100, random_state=42)
         
@@ -523,8 +548,7 @@ if st.session_state.get("show_lgbm_voting"):
         X_sample = X_test.sample(n=100, random_state=42)
     else:
         st.warning("Train LightGBM + RF Voting Model first.")
-
-
+    
 ##### HEADER: Features #####
 st.markdown("## 5. Features")
 st.write("""

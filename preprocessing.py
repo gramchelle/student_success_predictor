@@ -10,15 +10,7 @@ from sklearn.metrics import classification_report
 from imblearn.over_sampling import SMOTE
 
 
-def preprocess_data():
-    # fetch dataset
-    #predict_students_dropout_and_academic_success = fetch_ucirepo(id=697)
-
-    # data (as pandas dataframes)
-    #X = predict_students_dropout_and_academic_success.data.features
-    #y = predict_students_dropout_and_academic_success.data.targets
-
-    #df = X.join(y)
+def preprocess_data(trainsize=0.8):
     
     df = pd.read_csv("data.csv", sep=";")
 
@@ -246,7 +238,7 @@ def preprocess_data():
     X = df.drop(label, axis=1)
     y = df[label]
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, test_size=(1-trainsize), random_state=42)
     #print(X_train.columns)
     return non_processed_df, df, X_train, X_test, y_train, y_test
 
