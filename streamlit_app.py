@@ -383,7 +383,7 @@ st.write("Now, we will train three different models: Stacking Model, Voting Mode
 if 'accuracy_df' not in st.session_state:
     st.session_state.accuracy_df = {
         "XGBoost & RF Stacking Model Accuracy": "Not run yet",
-        "XGBoost + RF Voting Model Accuracy": "Not run yet",
+        "XGBoost & RF Voting Model Accuracy": "Not run yet",
         "Random Forest Model Accuracy": "Not run yet",
         "LightGBM & RF Voting Model Accuracy": "Not run yet"
     }
