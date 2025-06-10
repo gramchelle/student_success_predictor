@@ -89,14 +89,14 @@ st.bar_chart(df['Target'].value_counts(), use_container_width=True)
 
 ##### HEADER: Dataset #####
 st.markdown("## 2. Dataset")
-st.write(f"""
+st.write("""
          The dataset used in this app is a collection of students' academic records, personal attributes, and other relevant features.
          It contains information such as students' grades, attendance, socio-economic background, and other factors that may influence their academic performance.
          The dataset is used to train the model and make predictions about students' dropout and academic success.
          
          This dataset contains:
-        * **Number of rows**: {len(df)}  
-        * **Number of columns**: {len(df.columns)}  
+        * **Number of rows**: 4424 
+        * **Number of columns**: 37
         * **Target variable**: 'Target' (Dropout, Enrolled, Graduate)""")
 
 st.write("The dataset is available on [UCI ML Repository - Predict Students' Dropout and Academic Success](https://archive.ics.uci.edu/dataset/697/predict+students+dropout+and+academic+success).")
