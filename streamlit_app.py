@@ -89,7 +89,7 @@ st.bar_chart(df['Target'].value_counts(), use_container_width=True)
 
 ##### HEADER: Dataset #####
 st.markdown("## 2. Dataset")
-st.write("""
+st.write(f"""
          The dataset used in this app is a collection of students' academic records, personal attributes, and other relevant features.
          It contains information such as students' grades, attendance, socio-economic background, and other factors that may influence their academic performance.
          The dataset is used to train the model and make predictions about students' dropout and academic success.
