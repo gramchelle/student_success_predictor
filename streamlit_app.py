@@ -277,6 +277,10 @@ def two_histplots(df, col1, col2):
 
 two_histplots(processed_df, "sem_1_pass_rate", "sem_2_pass_rate")
 
+vis.comparison_visualization(df, processed_df, "Admission grade")
+    
+vis.comp(df, processed_df)
+
 #####  HEADER: Model Overview #####
 st.markdown(""" ## 4. Model Overview""")
 
@@ -344,10 +348,6 @@ It is robust, handles overfitting well, and often works out-of-the-box for tabul
 | **Voting Classifier**  | XGBoost + RF / LightGBM + RF        | Soft voting based on probability       |
 | **Random Forest**      | Random Forest only                  | Simple and fast baseline               |
 """)
-
-vis.comparison_visualization(df, processed_df, "Admission grade")
-    
-vis.comp(df, processed_df)
 
 #vis.plot_parent_correlations(df, "Target")
 
@@ -1185,6 +1185,16 @@ st.markdown("## 7. Model Performance")
 st.write("""The model's performance was evaluated using various fundamental metrics such as accuracy, precision, recall, and F1 score. These metrics were calculated on a test set kept separate from the training data to objectively measure the model's ability to generalize to unseen data. 
 Additionally, to better understand the model's success across classes, detailed visualizations like confusion matrices, ROC curves, and other graphical tools were used. These visuals help identify the model's strengths and areas for improvement. 
 The model demonstrates a high accuracy rate in predicting student dropout and academic success. Moreover, it is continuously monitored and improved based on new data and user feedback, ensuring its reliability and validity over the long term.""")
+
+photo_col_1, photo_col_2 = st.columns(2)
+
+with photo_col_1:
+    st.subheader("ROC Curve without SMOTE")
+    st.image("roc_curve2.png", caption="ROC Curve without SMOTE")
+
+with photo_col_2:
+    st.subheader("ROC Curve with SMOTE")
+    st.image("roc_curve1.png", caption="ROC Curve with SMOTE")
 
 st.markdown("## 8. Conclusion")
 st.write("""This application showcases the capability of supervised machine learning models to predict students' risk of dropout and their academic performance. The model was trained on a dataset containing various variables related to students' academic achievements and personal characteristics. 
