@@ -12,6 +12,7 @@ from preprocessing import preprocess_data, smote_data, feature_importances
 from models import lightgbm_voting_model, stacking_model, voting_model, random_forest_model
 from sklearn.metrics import confusion_matrix, classification_report
 import visualize.visualization as vis
+import PIL.Image as Image
 
 
 df, processed_df, X_train, X_test, y_train, y_test = preprocess_data()
@@ -1190,11 +1191,13 @@ photo_col_1, photo_col_2 = st.columns(2)
 
 with photo_col_1:
     st.subheader("ROC Curve without SMOTE")
-    st.image("roc_curve2.png", caption="ROC Curve without SMOTE")
+    image1 = Image.open("roc_curve2.png")
+    st.image(image1, caption="ROC Curve without SMOTE")
 
 with photo_col_2:
     st.subheader("ROC Curve with SMOTE")
-    st.image("roc_curve1.png", caption="ROC Curve with SMOTE")
+    image2 = Image.open("roc_curve1.png")
+    st.image(image2, caption="ROC Curve with SMOTE")
 
 st.markdown("## 8. Conclusion")
 st.write("""This application showcases the capability of supervised machine learning models to predict students' risk of dropout and their academic performance. The model was trained on a dataset containing various variables related to students' academic achievements and personal characteristics. 
